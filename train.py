@@ -1,39 +1,28 @@
 
+import os
 import gym
 import pybulletgym
 import d3rlpy
 
-env_list = ["InvertedPendulumPyBulletEnv-v0",
-            "InvertedDoublePendulumPyBulletEnv-v0",
-            "InvertedPendulumSwingupPyBulletEnv-v0",
-            "ReacherPyBulletEnv-v0",
-            "Walker2DPyBulletEnv-v0",
-            "HalfCheetahPyBulletEnv-v0",
-            "AntPyBulletEnv-v0",
-            "HopperPyBulletEnv-v0",
-            "HumanoidPyBulletEnv-v0",
-            "HumanoidFlagrunPyBulletEnv-v0",
-            "HumanoidFlagrunHarderPyBulletEnv-v0",
-            "AtlasPyBulletEnv-v0",
-            "PusherPyBulletEnv-v0",
-            "ThrowerPyBulletEnv-v0",
-            "StrikerPyBulletEnv-v0",
-            "InvertedPendulumMuJoCoEnv-v0",
-            "InvertedDoublePendulumMuJoCoEnv-v0",
-            "ReacherMuJoCoEnv-v0",
-            "Walker2DMuJoCoEnv-v0",
-            "HalfCheetahMuJoCoEnv-v0",
-            "AntMuJoCoEnv-v0",
-            "HopperMuJoCoEnv-v0",
-            "HumanoidMuJoCoEnv-v0",
-            "PusherMuJoCoEnv-v0",
-            "ThrowerMuJoCoEnv-v0",
-            "StrikerMuJoCoEnv-v0"]
+from d3rlpy.algos import CQL
+import yaml
+
+
+def get_pybulletgym_env_list():
+    folder = 'config'
+    file = 'env_list.yaml'
+    path = os.path.join(folder, file)
+    with open(path) as f:
+        try:
+            env_list = yaml.safe_load(f)
+        except yaml.YAMLError as exc:
+            print(exc)
+    print("env list: ", env_list)
+    return env_list
 
 
 def render_test(env_name, n_frames):
     env = gym.make(env_name)
-
     env.render()
     env.reset()
     for i in range(n_frames):
@@ -44,12 +33,35 @@ def render_test(env_name, n_frames):
 
 def dataset_check(env_name):
     dataset, env = d3rlpy.datasets.get_pybullet(env_name)
-    print("dataset info: ", dataset)
+    print("dataset info::::")
+    print("observations: ", dataset.observations.shape)
+    print("actions: ", dataset.actions.shape)
+    print("rewards: ", dataset.rewards.shape)
+    print("terminals: ", dataset.terminals.shape)
+    print("episodes: ", len(dataset.episodes))
+
+
+def train_d3rlpy(env_name):
+    dataset, env = d3rlpy.datasets.get_pybullet(env_name)
+
+    cql = CQL(use_gpu=False)
+    cql.fit(dataset,
+            n_epochs=100,
+            scorers={
+                'environment': d3rlpy.metrics.evaluate_on_environment(env),
+                'td_error': d3rlpy.metrics.td_error_scorer}
+            )
 
 
 if __name__ == "__main__":
     print("My RL Project!")
-    # env_name = env_list[0]
-    # render_test(env_name, 1000)
-    dataset_check("hopper-bullet-mixed-v0")
+    env_list = get_pybulletgym_env_list()
+
+    env_name = env_list['ENV_LIST'][8]
+    render_test(env_name, 10000)
+
+    # env_name = "hopper-bullet-mixed-v0"
+    # dataset_check(env_name)
+    # train_d3rlpy(env_name)
+
 

@@ -1,0 +1,27 @@
+ENV_LIST:
+  1: InvertedPendulumPyBulletEnv-v0
+  2: InvertedDoublePendulumPyBulletEnv-v0
+  3: InvertedPendulumSwingupPyBulletEnv-v0
+  4: ReacherPyBulletEnv-v0
+  5: Walker2DPyBulletEnv-v0
+  6: HalfCheetahPyBulletEnv-v0
+  7: AntPyBulletEnv-v0
+  8: HopperPyBulletEnv-v0
+  9: HumanoidPyBulletEnv-v0
+  10: HumanoidFlagrunPyBulletEnv-v0
+  11: HumanoidFlagrunHarderPyBulletEnv-v0
+  12: AtlasPyBulletEnv-v0
+  13: PusherPyBulletEnv-v0
+  14: ThrowerPyBulletEnv-v0
+  15: StrikerPyBulletEnv-v0
+  16: InvertedPendulumMuJoCoEnv-v0
+  17: InvertedDoublePendulumMuJoCoEnv-v0
+  18: ReacherMuJoCoEnv-v0
+  19: Walker2DMuJoCoEnv-v0
+  20: HalfCheetahMuJoCoEnv-v0
+  21: AntMuJoCoEnv-v0
+  22: HopperMuJoCoEnv-v0
+  23: HumanoidMuJoCoEnv-v0
+  24: PusherMuJoCoEnv-v0
+  25: ThrowerMuJoCoEnv-v0
+  26: StrikerMuJoCoEnv-v0
