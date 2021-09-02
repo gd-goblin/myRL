@@ -1,4 +1,4 @@
-ENV_LIST:
+PYBULLET_GYM_ENV_LIST:
   1: InvertedPendulumPyBulletEnv-v0
   2: InvertedDoublePendulumPyBulletEnv-v0
   3: InvertedPendulumSwingupPyBulletEnv-v0

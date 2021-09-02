@@ -57,7 +57,7 @@ if __name__ == "__main__":
     print("My RL Project!")
     env_list = get_pybulletgym_env_list()
 
-    env_name = env_list['ENV_LIST'][8]
+    env_name = env_list['PYBULLET_GYM_ENV_LIST'][8]
     render_test(env_name, 10000)
 
     # env_name = "hopper-bullet-mixed-v0"
