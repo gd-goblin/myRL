@@ -17,6 +17,7 @@ Pillow @ file:///C:/ci/pillow_1625663293593/work
 protobuf==3.17.3
 pybullet==3.1.7
 -e git+https://github.com/benelot/pybullet-gym.git@bc68201c8101c4e30dde95f425647a0709ee2f29#egg=pybulletgym
+PyYAML==5.4.1
 scikit-learn==0.24.2
 scipy==1.7.1
 six @ file:///tmp/build/80754af9/six_1623709665295/work
