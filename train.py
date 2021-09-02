@@ -43,11 +43,13 @@ def render_test(env_name, n_frames):
 
 
 def dataset_check(env_name):
-    pass
+    dataset, env = d3rlpy.datasets.get_pybullet(env_name)
+    print("dataset info: ", dataset)
 
 
 if __name__ == "__main__":
     print("My RL Project!")
-    env_name = env_list[0]
-    render_test(env_name, 1000)
+    # env_name = env_list[0]
+    # render_test(env_name, 1000)
+    dataset_check("hopper-bullet-mixed-v0")
 
