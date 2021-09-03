@@ -40,19 +40,21 @@ def offline_train(env_name):
             )
 
 
-def online_train(env_name, n_frames, visualize=False):
+def online_train(env_name, num_learning_iter, visualize=False):
     env = HopperBullet(device)
     env.render() if visualize else None
 
     ppo = PPO(vec_env=env,
               learning_rate=1e-4,
               actor_critic_class=ActorCritic,
-              num_transitions_per_env=256,
+              num_transitions_per_env=2048,
               num_mini_batches=32,
               num_learning_epochs=4,
+              sampler='random',
               apply_reset=False)
 
-    ppo.run(num_learning_iterations=1000, log_interval=50)
+    # ppo.load(path="run/model_850.pt")
+    ppo.run(num_learning_iterations=num_learning_iter, log_interval=50)
 
 
 if __name__ == "__main__":
@@ -60,7 +62,7 @@ if __name__ == "__main__":
     env_list = get_pybulletgym_env_list()
     env_name = env_list['PYBULLET_GYM_ENV_LIST'][8]
     # render_test(env_name, 10000)
-    online_train(env_name=env_name, n_frames=1000, visualize=False)
+    online_train(env_name=env_name, num_learning_iter=10000, visualize=False)
 
     # env_name = "hopper-bullet-mixed-v0"
     # d3rlpy_dataset_check(env_name)

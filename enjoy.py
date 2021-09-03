@@ -15,7 +15,7 @@ def enjoy(env_name, n_frames):
 
     # policy load
     path = "run"
-    file_name = "model_850.pt"
+    file_name = "model_650.pt"
     load_path = os.path.join(path, file_name)
 
     init_noise_std = 1.0

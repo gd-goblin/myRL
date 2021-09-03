@@ -15,7 +15,7 @@ class ActorCritic(nn.Module):
         if model_cfg is None:
             actor_hidden_dim = [256, 256, 256]
             critic_hidden_dim = [256, 256, 256]
-            activation = get_activation("selu")
+            activation = get_activation("relu")
         else:
             actor_hidden_dim = model_cfg['pi_hid_sizes']
             critic_hidden_dim = model_cfg['vf_hid_sizes']
