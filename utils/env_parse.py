@@ -1,5 +1,6 @@
 import os
 import yaml
+import d3rlpy
 
 
 def get_pybulletgym_env_list():
@@ -13,3 +14,13 @@ def get_pybulletgym_env_list():
             print(exc)
     print("env list: ", env_list)
     return env_list
+
+
+def d3rlpy_dataset_check(env_name):
+    dataset, env = d3rlpy.datasets.get_pybullet(env_name)
+    print("dataset info::::")
+    print("observations: ", dataset.observations.shape)
+    print("actions: ", dataset.actions.shape)
+    print("rewards: ", dataset.rewards.shape)
+    print("terminals: ", dataset.terminals.shape)
+    print("episodes: ", len(dataset.episodes))

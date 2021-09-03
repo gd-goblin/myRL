@@ -139,10 +139,13 @@ class PPO:
                         current_obs = self.vec_env.reset()
                         # current_states = self.vec_env.get_state()
                         current_states = current_obs.clone()
+                        self.apply_reset = False
                     # Compute the action
                     actions, actions_log_prob, values, mu, sigma = self.actor_critic.act(current_obs, current_obs)
                     # Step the vec_environment
                     next_obs, rews, dones, infos = self.vec_env.step(actions)
+                    if dones:
+                        self.apply_reset = True
                     # next_states = self.vec_env.get_state()
                     # Record the transition
                     self.storage.add_transitions(current_obs, current_obs, actions, rews, dones, values, actions_log_prob, mu, sigma)
