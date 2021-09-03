@@ -5,10 +5,9 @@ from utils.env_parse import get_pybulletgym_env_list
 
 import d3rlpy
 from d3rlpy.algos import CQL
+from algo.ppo import PPO, ActorCritic
 
 from task.task_desc import HopperBullet
-
-from algo.ppo import PPO, ActorCritic
 
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'

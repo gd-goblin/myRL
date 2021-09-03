@@ -1,5 +1,6 @@
 from utils.env_parse import get_pybulletgym_env_list
 import gym
+import pybulletgym
 import torch
 
 
