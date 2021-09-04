@@ -186,6 +186,7 @@ class PPO:
                     self.save(os.path.join(self.log_dir, 'model_{}.pt'.format(it)))
                 ep_infos.clear()
             self.save(os.path.join(self.log_dir, 'model_{}.pt'.format(num_learning_iterations)))
+            self.vec_env.close()
 
     def log(self, locs, width=80, pad=35):
         self.tot_timesteps += self.num_transitions_per_env * self.vec_env.num_envs

@@ -65,7 +65,7 @@ if __name__ == "__main__":
     env_list = get_pybulletgym_env_list()
     env_name = env_list['PYBULLET_GYM_ENV_LIST'][8]
     # render_test(env_name, 10000)
-    online_train(env_name=env_name, num_learning_iter=10000, visualize=False)
+    online_train(env_name=env_name, num_learning_iter=10, visualize=False)
 
     # env_name = "hopper-bullet-mixed-v0"
     # d3rlpy_dataset_check(env_name)

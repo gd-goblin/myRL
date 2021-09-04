@@ -3,8 +3,7 @@ import pybulletgym
 import torch
 
 from utils.env_parse import make_env
-from utils.env_parse import get_pybulletgym_env_list
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize, VecFrameStack
 
 
 class GymTask:
@@ -30,7 +29,7 @@ class GymTask:
 
 
 class WrapperVecEnv(GymTask):
-    def __init__(self, env_name, num_envs, device):
+    def __init__(self, env_name, num_envs, device, normalized_env=True):
         super().__init__()
         self.num_envs = num_envs
 
@@ -39,6 +38,8 @@ class WrapperVecEnv(GymTask):
         else:
             # self.env = DummyVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)])
             self.env = SubprocVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)])
+            if normalized_env:
+                self.env = VecNormalize(self.env)
 
         self.device = device
         self.observation_space = self.env.observation_space
@@ -63,6 +64,10 @@ class WrapperVecEnv(GymTask):
         #         for k, v in f.items():
         #             f[k] = torch.Tensor([v]).to(self.device)
         return next_obs, rew, done, info
+
+    def sample_action(self):
+        action = torch.from_numpy(self.action_space.sample()).to(self.device)
+        return action.repeat(self.num_envs, 1)  # same action for all envs
 
     def render(self):
         return self.env.render()
