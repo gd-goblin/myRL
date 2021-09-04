@@ -11,11 +11,11 @@ device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 
 def enjoy(env_name, n_frames):
-    env = HopperBullet(device=device)
+    env = HopperBullet(num_envs=1, device=device)
 
     # policy load
     path = "run"
-    file_name = "model_650.pt"
+    file_name = "model_1300.pt"
     load_path = os.path.join(path, file_name)
 
     init_noise_std = 1.0
