@@ -1,6 +1,28 @@
 import os
 import yaml
 import d3rlpy
+import gym
+
+from stable_baselines3.common.utils import set_random_seed
+
+
+def make_env(env_id, rank, seed=0):
+    """
+    Utility function for multiprocessed env.
+
+    :param env_id: (str) the environment ID
+    :param seed: (int) the inital seed for RNG
+    :param rank: (int) index of the subprocess
+    """
+
+    def _init():
+        env = gym.make(env_id)
+        # Important: use a different seed for each environment
+        env.seed(seed + rank)
+        return env
+
+    set_random_seed(seed)
+    return _init
 
 
 def get_pybulletgym_env_list():

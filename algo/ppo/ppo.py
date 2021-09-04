@@ -139,13 +139,10 @@ class PPO:
                         current_obs = self.vec_env.reset()
                         # current_states = self.vec_env.get_state()
                         current_states = current_obs.clone()
-                        self.apply_reset = False
                     # Compute the action
                     actions, actions_log_prob, values, mu, sigma = self.actor_critic.act(current_obs, current_obs)
                     # Step the vec_environment
                     next_obs, rews, dones, infos = self.vec_env.step(actions)
-                    if dones:
-                        self.apply_reset = True
                     # next_states = self.vec_env.get_state()
                     # Record the transition
                     self.storage.add_transitions(current_obs, current_obs, actions, rews, dones, values, actions_log_prob, mu, sigma)
@@ -196,14 +193,15 @@ class PPO:
         iteration_time = locs['collection_time'] + locs['learn_time']
 
         ep_string = f''
-        if locs['ep_infos']:
-            for key in locs['ep_infos'][0]:
-                infotensor = torch.tensor([], device=self.device)
-                for ep_info in locs['ep_infos']:
-                    infotensor = torch.cat((infotensor, ep_info[key].to(self.device)))
-                value = torch.mean(infotensor)
-                self.writer.add_scalar('Episode/' + key, value, locs['it'])
-                ep_string += f"""{f'Mean episode {key}:':>{pad}} {value:.4f}\n"""
+        # TODO, uncomment if you want to use
+        # if locs['ep_infos']:
+        #     for key in locs['ep_infos'][0]:
+        #         infotensor = torch.tensor([], device=self.device)
+        #         for ep_info in locs['ep_infos']:
+        #             infotensor = torch.cat((infotensor, ep_info[key].to(self.device)))
+        #         value = torch.mean(infotensor)
+        #         self.writer.add_scalar('Episode/' + key, value, locs['it'])
+        #         ep_string += f"""{f'Mean episode {key}:':>{pad}} {value:.4f}\n"""
         mean_std = self.actor_critic.log_std.exp().mean()
 
         self.writer.add_scalar('Loss/value_function', locs['mean_value_loss'], locs['it'])

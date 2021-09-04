@@ -27,14 +27,13 @@ def enjoy(env_name, n_frames):
 
     env.render()
     obs = env.reset()
-    done = False
     for i in range(n_frames):
-        if done:
-            env.reset()
-            print("stpes: {}, done: {}".format(i, done))
-
         action = model.act_inference(obs)
-        next_obs, reward, done, info = env.step(action.detach())
+        obs, reward, done, info = env.step(action.detach())
+
+        if done:
+            obs = env.reset()
+            print("stpes: {}, done: {}".format(i, done))
     env.close()
 
 

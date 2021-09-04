@@ -1,7 +1,10 @@
-from utils.env_parse import get_pybulletgym_env_list
 import gym
 import pybulletgym
 import torch
+
+from utils.env_parse import make_env
+from utils.env_parse import get_pybulletgym_env_list
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
 
 class GymTask:
@@ -27,12 +30,18 @@ class GymTask:
 
 
 class HopperBullet(GymTask):
-    def __init__(self, device):
+    def __init__(self, num_envs, device):
         super().__init__()
+        self.num_envs = num_envs
         env_list = get_pybulletgym_env_list()
         env_name = env_list['PYBULLET_GYM_ENV_LIST'][8]
-        self.env = gym.make(env_name)
-        self.num_envs = 1
+
+        if self.num_envs == 1:
+            self.env = gym.make(env_name)
+        else:
+            self.env = DummyVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)])
+            # self.env = SubprocVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)], start_method='fork')
+
         self.device = device
         self.observation_space = self.env.observation_space
         self.state_space = self.observation_space
@@ -48,11 +57,13 @@ class HopperBullet(GymTask):
         _next_obs, _rew, _done, info = self.env.step(action)
 
         next_obs = torch.FloatTensor(_next_obs).view(self.num_envs, -1).to(self.device)
-        rew = torch.FloatTensor([_rew]).to(self.device)
+        rew = torch.FloatTensor([_rew]).squeeze(0).to(self.device)
         done = torch.FloatTensor([_done]).to(self.device)
-        if bool(info):
-            for k, v in info.items():
-                info[k] = torch.Tensor([v]).to(self.device)
+
+        # for f in info:
+        #     if bool(f):
+        #         for k, v in f.items():
+        #             f[k] = torch.Tensor([v]).to(self.device)
         return next_obs, rew, done, info
 
     def render(self):

@@ -3,6 +3,9 @@ import gym
 import pybulletgym
 from utils.env_parse import get_pybulletgym_env_list
 
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
+
 import d3rlpy
 from d3rlpy.algos import CQL
 from algo.ppo import PPO, ActorCritic
@@ -41,19 +44,20 @@ def offline_train(env_name):
 
 
 def online_train(env_name, num_learning_iter, visualize=False):
-    env = HopperBullet(device)
+    env = HopperBullet(num_envs=16, device=device)
+
     env.render() if visualize else None
 
     ppo = PPO(vec_env=env,
               learning_rate=1e-4,
               actor_critic_class=ActorCritic,
-              num_transitions_per_env=2048,
+              num_transitions_per_env=2048 // env.num_envs,
               num_mini_batches=32,
               num_learning_epochs=4,
               sampler='random',
               apply_reset=False)
 
-    # ppo.load(path="run/model_850.pt")
+    # ppo.load(path="run/model_650.pt")
     ppo.run(num_learning_iterations=num_learning_iter, log_interval=50)
 
 
