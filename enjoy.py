@@ -1,4 +1,5 @@
 import os
+import time
 import gym
 
 import torch
@@ -40,11 +41,12 @@ def enjoy(env_name, n_frames):
             obs = env.reset()
             print("stpes: {}, done: {}".format(i, done))
             frame = 0
+        time.sleep(0.001)
     env.close()
 
 
 if __name__ == "__main__":
     print("enjoy!")
     env_list = get_pybulletgym_env_list()
-    env_name = env_list['PYBULLET_GYM_ENV_LIST'][1]
+    env_name = env_list['PYBULLET_GYM_ENV_LIST'][4]
     enjoy(env_name, 10000)

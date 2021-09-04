@@ -42,7 +42,7 @@ def offline_train(env_name):
 
 
 def online_train(env_name, num_learning_iter, visualize=False, resume=False):
-    env = WrapperVecEnv(env_name=env_name, num_envs=16, device=device, normalized_env=False)
+    env = WrapperVecEnv(env_name=env_name, num_envs=2, device=device, normalized_env=False)
     env.render() if visualize else None
     log_dir = os.path.join('run', env_name)
 
@@ -69,7 +69,7 @@ def online_train(env_name, num_learning_iter, visualize=False, resume=False):
 if __name__ == "__main__":
     print("My RL Project!")
     env_list = get_pybulletgym_env_list()
-    env_name = env_list['PYBULLET_GYM_ENV_LIST'][1]
+    env_name = env_list['PYBULLET_GYM_ENV_LIST'][13]
     # render_test(env_name, 10000)
     online_train(env_name=env_name, num_learning_iter=1000, visualize=False, resume=True)
 

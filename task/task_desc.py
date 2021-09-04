@@ -1,6 +1,7 @@
 import gym
 import pybulletgym
 import torch
+import numpy as np
 
 from utils.env_parse import make_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize, VecFrameStack
@@ -36,6 +37,8 @@ class WrapperVecEnv(gym.Env):
 
     def step(self, action):
         action = self.rescale_action(action)
+        if not isinstance(action, np.ndarray):
+            action = action.cpu().numpy()
         _next_obs, _rew, _done, info = self.env.step(action)
 
         next_obs = torch.FloatTensor(_next_obs).view(self.num_envs, -1).to(self.device)
