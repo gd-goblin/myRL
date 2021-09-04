@@ -42,7 +42,7 @@ def offline_train(env_name):
 
 
 def online_train(env_name, num_learning_iter, visualize=False):
-    env = WrapperVecEnv(env_name=env_name, num_envs=16, device=device)
+    env = WrapperVecEnv(env_name=env_name, num_envs=16, device=device, normalized_env=True)
     env.render() if visualize else None
     log_dir = os.path.join('run', env_name)
 
