@@ -15,7 +15,7 @@ def enjoy(env_name, n_frames):
 
     # policy load
     path = "run"
-    file_name = "model_350.pt"
+    file_name = "model_400.pt"
     load_path = os.path.join(path, env_name, file_name)
 
     init_noise_std = 1.0
@@ -30,7 +30,7 @@ def enjoy(env_name, n_frames):
     frame = 0
     for i in range(n_frames):
         action = model.act_inference(obs)
-        obs, reward, done, info = env.step(action.detach())
+        obs, reward, done, info = env.step(action.squeeze(0).detach())
 
         frame += 1
         if done or frame > 300:

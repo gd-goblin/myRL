@@ -6,32 +6,11 @@ from utils.env_parse import make_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize, VecFrameStack
 
 
-class GymTask:
-    def __init__(self):
-        self.env = None
-        self.device = None
-        self.num_envs = None
-        self.observation_space = None
-        self.state_space = None
-        self.action_space = None
-
-    def reset(self):
-        raise NotImplementedError
-
-    def step(self, action):
-        raise NotImplementedError
-
-    def render(self):
-        raise NotImplementedError
-
-    def close(self):
-        raise NotImplementedError
-
-
-class WrapperVecEnv(GymTask):
+class WrapperVecEnv(gym.Env):
     def __init__(self, env_name, num_envs, device, normalized_env=True):
         super().__init__()
         self.num_envs = num_envs
+        self.device = device
 
         if self.num_envs == 1:
             self.env = gym.make(env_name)
@@ -44,7 +23,6 @@ class WrapperVecEnv(GymTask):
         self.low = torch.Tensor(self.env.action_space.low).to(self.device)
         self.high = torch.Tensor(self.env.action_space.high).to(self.device)
 
-        self.device = device
         self.observation_space = self.env.observation_space
         self.state_space = self.observation_space
         self.action_space = self.env.action_space
