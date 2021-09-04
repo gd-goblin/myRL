@@ -13,17 +13,20 @@ device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 def enjoy(env_name, n_frames):
     env = WrapperVecEnv(env_name=env_name, num_envs=1, device=device)
 
-    # policy load
-    path = "run"
-    file_name = "model_150.pt"
-    load_path = os.path.join(path, env_name, file_name)
-
     init_noise_std = 1.0
     model_cfg = None
     model = ActorCritic(env.observation_space.shape, None, env.action_space.shape,
                         init_noise_std, model_cfg, asymmetric=False)
-    model.load_state_dict(torch.load(load_path))
-    model.eval()
+    try:
+        # always loads the latest model if exists
+        log_dir = os.path.join('run', env_name)
+        matching = [s for s in os.listdir(log_dir) if "model_" in s]
+        load_path = os.path.join(log_dir, matching[-1])
+
+        model.load_state_dict(torch.load(load_path))
+        model.eval()
+    except IndexError:
+        print("No pre-trained model found")
 
     env.render()
     obs = env.reset()
