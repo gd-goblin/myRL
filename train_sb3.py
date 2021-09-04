@@ -12,17 +12,20 @@ def train_test():
     env_list = get_pybulletgym_env_list()
     env_name = env_list['PYBULLET_GYM_ENV_LIST'][8]
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    env = WrapperVecEnv(env_name=env_name, num_envs=2, device=device, normalized_env=False)
+    env = WrapperVecEnv(env_name=env_name, num_envs=8, device=device, normalized_env=True)
     # n_procs = 2
     # env = DummyVecEnv([make_env(env_id=env_name, rank=i) for i in range(n_procs)])
     # env = VecNormalize(env)
     print("env: ", env)
     obs = env.reset()
+    low, high = env.action_space.low, env.action_space.high
+    print("low: {}, high: {}".format(low, high))
     print("obs: ", obs.shape)
     for i in range(10):
         action = env.sample_action()
+        print("action min/max: {} / {}".format(action.min(), action.max()))
         obs, rew, _, _ = env.step(action)
-        print("obs: ", obs)
+        print("obs min/max: {} / {}".format(obs.min(), obs.max()))
 
     env.close()
     exit()

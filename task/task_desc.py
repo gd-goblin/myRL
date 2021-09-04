@@ -41,18 +41,23 @@ class WrapperVecEnv(GymTask):
             if normalized_env:
                 self.env = VecNormalize(self.env)
 
+        self.low = torch.Tensor(self.env.action_space.low).to(self.device)
+        self.high = torch.Tensor(self.env.action_space.high).to(self.device)
+
         self.device = device
         self.observation_space = self.env.observation_space
         self.state_space = self.observation_space
         self.action_space = self.env.action_space
+
+    def rescale_action(self, action):
+        return self.low + (0.5 * (action + 1.0) * (self.high - self.low))
 
     def reset(self):
         obs = self.env.reset()
         return torch.FloatTensor(obs).view(self.num_envs, -1).to(self.device)
 
     def step(self, action):
-        if len(action.shape) > 1:
-            action = action.squeeze(0)
+        action = self.rescale_action(action)
         _next_obs, _rew, _done, info = self.env.step(action)
 
         next_obs = torch.FloatTensor(_next_obs).view(self.num_envs, -1).to(self.device)
