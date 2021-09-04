@@ -4,18 +4,18 @@ import gym
 import torch
 from utils.env_parse import get_pybulletgym_env_list
 from algo.ppo import PPO, ActorCritic
-from task.task_desc import HopperBullet
+from task.task_desc import WrapperVecEnv
 
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 
 def enjoy(env_name, n_frames):
-    env = HopperBullet(num_envs=1, device=device)
+    env = WrapperVecEnv(env_name=env_name, num_envs=1, device=device)
 
     # policy load
     path = "run"
-    file_name = "model_1300.pt"
+    file_name = "model_2050.pt"
     load_path = os.path.join(path, file_name)
 
     init_noise_std = 1.0
@@ -27,13 +27,16 @@ def enjoy(env_name, n_frames):
 
     env.render()
     obs = env.reset()
+    frame = 0
     for i in range(n_frames):
         action = model.act_inference(obs)
         obs, reward, done, info = env.step(action.detach())
 
-        if done:
+        frame += 1
+        if done or frame > 300:
             obs = env.reset()
             print("stpes: {}, done: {}".format(i, done))
+            frame = 0
     env.close()
 
 

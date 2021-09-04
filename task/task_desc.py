@@ -29,18 +29,16 @@ class GymTask:
         raise NotImplementedError
 
 
-class HopperBullet(GymTask):
-    def __init__(self, num_envs, device):
+class WrapperVecEnv(GymTask):
+    def __init__(self, env_name, num_envs, device):
         super().__init__()
         self.num_envs = num_envs
-        env_list = get_pybulletgym_env_list()
-        env_name = env_list['PYBULLET_GYM_ENV_LIST'][8]
 
         if self.num_envs == 1:
             self.env = gym.make(env_name)
         else:
-            self.env = DummyVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)])
-            # self.env = SubprocVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)], start_method='fork')
+            # self.env = DummyVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)])
+            self.env = SubprocVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)])
 
         self.device = device
         self.observation_space = self.env.observation_space
