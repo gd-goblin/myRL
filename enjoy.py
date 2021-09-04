@@ -15,7 +15,7 @@ def enjoy(env_name, n_frames):
 
     # policy load
     path = "run"
-    file_name = "model_400.pt"
+    file_name = "model_150.pt"
     load_path = os.path.join(path, env_name, file_name)
 
     init_noise_std = 1.0
@@ -43,5 +43,5 @@ def enjoy(env_name, n_frames):
 if __name__ == "__main__":
     print("enjoy!")
     env_list = get_pybulletgym_env_list()
-    env_name = env_list['PYBULLET_GYM_ENV_LIST'][8]
+    env_name = env_list['PYBULLET_GYM_ENV_LIST'][1]
     enjoy(env_name, 10000)

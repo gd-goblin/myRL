@@ -58,15 +58,18 @@ def online_train(env_name, num_learning_iter, visualize=False, resume=False):
 
     if resume:
         matching = [s for s in os.listdir(log_dir) if "model_" in s]
-        load_path = os.path.join(log_dir, matching[-1])
-        ppo.load(path=load_path)
+        try:
+            load_path = os.path.join(log_dir, matching[-1])
+            ppo.load(path=load_path)
+        except IndexError:
+            print("No pre-trained model found")
     ppo.run(num_learning_iterations=num_learning_iter, log_interval=50)
 
 
 if __name__ == "__main__":
     print("My RL Project!")
     env_list = get_pybulletgym_env_list()
-    env_name = env_list['PYBULLET_GYM_ENV_LIST'][8]
+    env_name = env_list['PYBULLET_GYM_ENV_LIST'][1]
     # render_test(env_name, 10000)
     online_train(env_name=env_name, num_learning_iter=1000, visualize=False, resume=True)
 
