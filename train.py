@@ -58,6 +58,7 @@ def online_train(env_name, num_learning_iter, visualize=False, resume=False):
 
     if resume:
         matching = [s for s in os.listdir(log_dir) if "model_" in s]
+        matching.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
         try:
             load_path = os.path.join(log_dir, matching[-1])
             ppo.load(path=load_path)
@@ -69,9 +70,9 @@ def online_train(env_name, num_learning_iter, visualize=False, resume=False):
 if __name__ == "__main__":
     print("My RL Project!")
     env_list = get_pybulletgym_env_list()
-    env_name = env_list['PYBULLET_GYM_ENV_LIST'][4]
+    env_name = env_list['PYBULLET_GYM_ENV_LIST'][11]
     # render_test(env_name, 10000)
-    online_train(env_name=env_name, num_learning_iter=1000, visualize=False, resume=False)
+    online_train(env_name=env_name, num_learning_iter=3000, visualize=False, resume=True)
 
     # env_name = "hopper-bullet-mixed-v0"
     # d3rlpy_dataset_check(env_name)

@@ -55,5 +55,5 @@ def enjoy(env_name, n_frames):
 if __name__ == "__main__":
     print("enjoy!")
     env_list = get_pybulletgym_env_list()
-    env_name = env_list['PYBULLET_GYM_ENV_LIST'][4]
+    env_name = env_list['PYBULLET_GYM_ENV_LIST'][11]
     enjoy(env_name, 10000)
