@@ -103,8 +103,13 @@ class PPO:
         self.current_learning_iteration = int(path.split("_")[-1].split(".")[0])
         self.actor_critic.train()
 
+        # load vectorized stat
+
     def save(self, path):
         torch.save(self.actor_critic.state_dict(), path)
+        if self.vec_env.normalized_env:
+            it = int(path.split("_")[-1].split(".")[0])
+            self.vec_env.save(os.path.join(self.log_dir, 'vec_normalize_{}.pkl'.format(it)))
 
     def run(self, num_learning_iterations, log_interval=1):
         current_obs = self.vec_env.reset()

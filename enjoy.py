@@ -12,7 +12,7 @@ device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
 
 
 def enjoy(env_name, n_frames):
-    env = WrapperVecEnv(env_name=env_name, num_envs=1, device=device)
+    env = WrapperVecEnv(env_name=env_name, num_envs=1, device=device, normalized_env=False)
 
     init_noise_std = 1.0
     model_cfg = None
@@ -26,6 +26,13 @@ def enjoy(env_name, n_frames):
 
         model.load_state_dict(torch.load(load_path))
         model.eval()
+
+        stat = [s for s in os.listdir(log_dir) if "vec_normalize_" in s]
+        stat.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+        if stat[-1]:
+            stat_path = os.path.join(log_dir, stat[-1])
+            env.load(stat_path)
+
     except IndexError:
         print("No pre-trained model found")
 
@@ -34,7 +41,7 @@ def enjoy(env_name, n_frames):
     frame = 0
     for i in range(n_frames):
         action = model.act_inference(obs)
-        obs, reward, done, info = env.step(action.squeeze(0).detach())
+        obs, reward, done, info = env.step(action.detach())
 
         frame += 1
         if done or frame > 300:
