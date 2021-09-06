@@ -11,7 +11,7 @@ class Mirobot(URDFBasedRobot):
     TARG_LIMIT = deg2rad(15)
 
     def __init__(self):
-        URDFBasedRobot.__init__(self, model_urdf='mirobot.urdf', robot_name='mirobot_urdf', action_dim=8, obs_dim=39)
+        URDFBasedRobot.__init__(self, model_urdf='mirobot.urdf', robot_name='mirobot_urdf', action_dim=7, obs_dim=42)
         print("Pybullet-Mirobot class description")
 
     def reset(self, bullet_client):     # overriding
@@ -104,6 +104,8 @@ class Mirobot(URDFBasedRobot):
         cube_x, cube_y, cube_z, cube_qx, cube_qy, cube_qz, cube_qw = cube_pose
         cube_lin_vel, cube_rot_vel = self.p_cube.get_velocity()
 
+        to_cube_vec = cube_pose[:3] - grip_pose[:3]
+
         # joint angles & angular vel
         theta1, theta_dot1 = self.j1.current_relative_position()
         theta2, theta_dot2 = self.j2.current_relative_position()
@@ -111,7 +113,9 @@ class Mirobot(URDFBasedRobot):
         theta4, theta_dot4 = self.j4.current_relative_position()
         theta5, theta_dot5 = self.j5.current_relative_position()
         theta6, theta_dot6 = self.j6.current_relative_position()
+
         return np.array([
+            to_cube_vec[0], to_cube_vec[1], to_cube_vec[2],
             grip_x, grip_y, grip_z, grip_qx, grip_qy, grip_qz, grip_qw,
             cube_x, cube_y, cube_z, cube_qx, cube_qy, cube_qz, cube_qw,
             hand_lin_vel[0], hand_lin_vel[1], hand_lin_vel[2],
@@ -126,25 +130,12 @@ class Mirobot(URDFBasedRobot):
             theta6, theta_dot6,
             self.grip
         ])
-        # theta, self.theta_dot = self.central_joint.current_relative_position()
-        # self.gamma, self.gamma_dot = self.elbow_joint.current_relative_position()
-        # target_x, _ = self.jdict["target_x"].current_position()
-        # target_y, _ = self.jdict["target_y"].current_position()
-        # self.to_target_vec = np.array(self.fingertip.pose().xyz()) - np.array(self.target.pose().xyz())
-        # return np.array([
-        #     target_x,
-        #     target_y,
-        #     self.to_target_vec[0],
-        #     self.to_target_vec[1],
-        #     np.cos(theta),
-        #     np.sin(theta),
-        #     self.theta_dot,
-        #     self.gamma,
-        #     self.gamma_dot,
-        # ])
 
     def calc_potential(self):
-        pass
+        grip_pose = self.get_finger_tip_pose()
+        cube_pose = self.p_cube.get_pose()
+        to_cube_vec = cube_pose[:3] - grip_pose[:3]
+        return -100 * np.linalg.norm(to_cube_vec)
 
     def get_finger_tip_pose(self):
         lfinger_pose = self.p_left_finger.get_pose()
@@ -167,7 +158,7 @@ class Mirobot(URDFBasedRobot):
 class MirobotBulletEnv(BaseBulletEnv):
     def __init__(self):
         self.robot = Mirobot()
-        BaseBulletEnv.__init__(self.robot)
+        BaseBulletEnv.__init__(self, self.robot)
 
     def create_single_player_scene(self, bullet_client):
         return SingleRobotEmptyScene(bullet_client, gravity=0.0, timestep=0.0165, frame_skip=1)
@@ -182,13 +173,12 @@ class MirobotBulletEnv(BaseBulletEnv):
         potential_old = self.potential
         self.potential = self.robot.calc_potential()
 
-        electricity_cost = (
-                -0.10 * (np.abs(a[0] * self.robot.theta_dot) + np.abs(
-            a[1] * self.robot.gamma_dot))  # work torque*angular_velocity
-                - 0.01 * (np.abs(a[0]) + np.abs(a[1]))  # stall torque require some energy
-        )
-        stuck_joint_cost = -0.1 if np.abs(np.abs(self.robot.gamma) - 1) < 0.01 else 0.0
-        self.rewards = [float(self.potential - potential_old), float(electricity_cost), float(stuck_joint_cost)]
+        # electricity_cost = (
+        #         -0.10 * (np.abs(a[0] * self.robot.theta_dot) + np.abs(a[1] * self.robot.gamma_dot))  # work torque*angular_velocity
+        #         - 0.01 * (np.abs(a[0]) + np.abs(a[1]))  # stall torque require some energy
+        # )
+        # stuck_joint_cost = -0.1 if np.abs(np.abs(self.robot.gamma) - 1) < 0.01 else 0.0
+        self.rewards = [float(self.potential - potential_old)]  # float(electricity_cost), float(stuck_joint_cost)
         self.HUD(state, a, False)
         return state, sum(self.rewards), False, {}
 

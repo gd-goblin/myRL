@@ -45,19 +45,23 @@ def train_test():
             obs = env.reset()
 
 
-from task.mirobot import Mirobot
+from task.mirobot import Mirobot, MirobotBulletEnv
 import operator
 
 
 def custom_task():
     print("custom task test")
-    p.connect(p.GUI)
-    env = Mirobot()
-    obs = env.reset(p)
+    env = MirobotBulletEnv()
+    env.render('human')
+    obs = env.reset()
     for i in range(100):
         time.sleep(0.1)
         print("obs: ", rad2deg(obs), obs.shape)
-        pass
+        a = env.action_space.sample()
+        a[-1] = 1 if a[-1] > 0 else 0
+        print("action: ", a)
+        next_obs, reward, done, info = env.step(a)
+        obs = next_obs
 
 
 if __name__ == '__main__':
