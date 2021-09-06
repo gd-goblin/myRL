@@ -46,15 +46,17 @@ def train_test():
 
 
 from task.mirobot import Mirobot
+import operator
 
 
 def custom_task():
     print("custom task test")
     p.connect(p.GUI)
     env = Mirobot()
-    env.reset(p)
-    for i in range(1000):
-        time.sleep(0.01)
+    obs = env.reset(p)
+    for i in range(100):
+        time.sleep(0.1)
+        print("obs: ", rad2deg(obs), obs.shape)
         pass
 
 

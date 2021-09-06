@@ -35,4 +35,4 @@ def quat_to_mat(q):     # single element
     tmp2 = q[0] * q[3]
     m[2, 1] = 2.0 * (tmp1 + tmp2) * invs
     m[1, 2] = 2.0 * (tmp1 - tmp2) * invs
-    return m
+    return np.array(m)
