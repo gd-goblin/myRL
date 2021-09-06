@@ -35,7 +35,7 @@ class Mirobot(URDFBasedRobot):
         self.parts, self.jdict, self.ordered_joints, self.robot_body = \
             self.addToScene(self._p,
                             self._p.loadURDF(obs_path,
-                                             basePosition=[0.1, 0, 0],
+                                             basePosition=[0.2, 0, 0],
                                              baseOrientation=[0, 0, 0, 1],
                                              useFixedBase=False))
 
@@ -71,6 +71,10 @@ class Mirobot(URDFBasedRobot):
         self.p_left_finger = self.parts["left_finger"]
         self.p_right_finger = self.parts["right_finger"]
         self.p_cube = self.parts["cube"]
+
+        quat = euler_to_quat(roll=0.0, pitch=0.0, yaw=np.random.uniform(low=-deg2rad(90), high=deg2rad(90)))
+        pos = np.array([np.random.uniform(0.1, 0.3), np.random.uniform(-0.15, 0.15), 0.1])
+        self.p_cube.reset_pose(position=pos, orientation=quat)
 
         finger_tip_pose = self.get_finger_tip_pose()
         self.draw_coordinate(origin=finger_tip_pose[:3], quat=finger_tip_pose[3:])

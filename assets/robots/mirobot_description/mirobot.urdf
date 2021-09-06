@@ -13,7 +13,7 @@
       <geometry>
         <mesh filename="package://mirobot_description/meshes/base_link.dae"/>
       </geometry>
-      <material name="">
+      <material name="base_link_color">
         <color rgba="0.44 0.5 0.56 1"/>
       </material>
     </visual>
@@ -30,7 +30,7 @@
       <geometry>
         <mesh filename="package://mirobot_description/meshes/Link1.dae"/>
       </geometry>
-      <material name="">
+      <material name="Link1_color">
         <color rgba="0.83 0.83 0.83 1"/>
       </material>
     </visual>
@@ -54,7 +54,7 @@
       <geometry>
         <mesh filename="package://mirobot_description/meshes/Link2.dae"/>
       </geometry>
-      <material name="">
+      <material name="Link2_color">
         <color rgba="1 0.65 0 1"/>
       </material>
     </visual>
@@ -78,7 +78,7 @@
       <geometry>
         <mesh filename="package://mirobot_description/meshes/Link3.dae"/>
       </geometry>
-      <material name="">
+      <material name="Link3_color">
         <color rgba="0.83 0.83 0.83 1"/>
       </material>
     </visual>
@@ -102,7 +102,7 @@
       <geometry>
         <mesh filename="package://mirobot_description/meshes/Link4.dae"/>
       </geometry>
-      <material name="">
+      <material name="Link4_color">
         <color rgba="1 0.65 0 1"/>
       </material>
     </visual>
@@ -152,7 +152,7 @@
       <geometry>
         <mesh filename="package://mirobot_description/meshes/Link6.dae"/>
       </geometry>
-      <material name="">
+      <material name="Link6_color">
         <color rgba="0.83 0.83 0.83 1"/>
       </material>
     </visual>
@@ -179,6 +179,9 @@
       <geometry>
         <mesh filename="package://mirobot_description/meshes/mirobot_hand.obj"/>
       </geometry>
+      <material name="mirobot_hand_color">
+        <color rgba="0.0 0.0 0.0 1"/>
+      </material>
     </visual>
     <collision>
       <geometry>
