@@ -2,7 +2,8 @@ from pybulletgym.envs.roboschool.envs.env_bases import BaseBulletEnv
 from pybulletgym.envs.roboschool.scenes.scene_bases import SingleRobotEmptyScene
 from assets.robots.robot_bases import URDFBasedRobot
 import numpy as np
-import operator
+import os
+import pybullet
 from utils.utils import *
 
 
@@ -10,8 +11,39 @@ class Mirobot(URDFBasedRobot):
     TARG_LIMIT = deg2rad(15)
 
     def __init__(self):
-        URDFBasedRobot.__init__(self, model_urdf='mirobot_description\mirobot.urdf', robot_name='mirobot_urdf', action_dim=8, obs_dim=6)
+        URDFBasedRobot.__init__(self, model_urdf='mirobot.urdf', robot_name='mirobot_urdf', action_dim=8, obs_dim=39)
         print("Pybullet-Mirobot class description")
+
+    def reset(self, bullet_client):     # overriding
+        self._p = bullet_client
+        self.ordered_joints = []
+
+        robot_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'robots', 'mirobot_description', self.model_urdf)
+        print(robot_path)
+
+        flags = pybullet.URDF_USE_SELF_COLLISION if self.self_collision else 0
+        self.parts, self.jdict, self.ordered_joints, self.robot_body = \
+            self.addToScene(self._p,
+                            self._p.loadURDF(robot_path,
+                                             basePosition=self.basePosition,
+                                             baseOrientation=self.baseOrientation,
+                                             useFixedBase=self.fixed_base,
+                                             flags=flags))
+
+        obs_path = os.path.join(os.path.dirname(__file__), '..', 'assets', 'objects', 'cube.urdf')
+        print(obs_path)
+        self.parts, self.jdict, self.ordered_joints, self.robot_body = \
+            self.addToScene(self._p,
+                            self._p.loadURDF(obs_path,
+                                             basePosition=[0.1, 0, 0],
+                                             baseOrientation=[0, 0, 0, 1],
+                                             useFixedBase=False))
+
+        self.robot_specific_reset(self._p)
+
+        s = self.calc_state()  # optimization: calc_state() can calculate something in self.* for calc_potential() to use
+        self.potential = self.calc_potential()
+        return s
 
     def robot_specific_reset(self, physicsClient):
         print("jdict: ", self.jdict)
@@ -35,15 +67,17 @@ class Mirobot(URDFBasedRobot):
         self.jlfinger.reset_current_position(0.017, 0)
         self.jrfinger.reset_current_position(0.017, 0)
 
-        self.phand = self.parts["mirobot_hand"]
-        self.pleft_finger = self.parts["left_finger"]
-        self.pright_finger = self.parts["right_finger"]
+        self.p_hand = self.parts["mirobot_hand"]
+        self.p_left_finger = self.parts["left_finger"]
+        self.p_right_finger = self.parts["right_finger"]
+        self.p_cube = self.parts["cube"]
 
         finger_tip_pose = self.get_finger_tip_pose()
         self.draw_coordinate(origin=finger_tip_pose[:3], quat=finger_tip_pose[3:])
 
     def apply_action(self, a):
         assert (np.isfinite(a).all())
+        assert (a.shape == self.action_space.shape)
         self.j1.set_motor_torque(0.05 * float(np.clip(a[0], -1, +1)))
         self.j2.set_motor_torque(0.05 * float(np.clip(a[1], -1, +1)))
         self.j3.set_motor_torque(0.05 * float(np.clip(a[2], -1, +1)))
@@ -56,6 +90,17 @@ class Mirobot(URDFBasedRobot):
         self.jrfinger.set_position(grip_act)
 
     def calc_state(self):
+        # gripper pose & vel
+        grip_pose = self.get_finger_tip_pose()
+        grip_x, grip_y, grip_z, grip_qx, grip_qy, grip_qz, grip_qw = grip_pose
+        hand_lin_vel, hand_rot_vel = self.p_hand.get_velocity()
+
+        # cube pose & vel
+        cube_pose = self.p_cube.get_pose()
+        cube_x, cube_y, cube_z, cube_qx, cube_qy, cube_qz, cube_qw = cube_pose
+        cube_lin_vel, cube_rot_vel = self.p_cube.get_velocity()
+
+        # joint angles & angular vel
         theta1, theta_dot1 = self.j1.current_relative_position()
         theta2, theta_dot2 = self.j2.current_relative_position()
         theta3, theta_dot3 = self.j3.current_relative_position()
@@ -63,6 +108,12 @@ class Mirobot(URDFBasedRobot):
         theta5, theta_dot5 = self.j5.current_relative_position()
         theta6, theta_dot6 = self.j6.current_relative_position()
         return np.array([
+            grip_x, grip_y, grip_z, grip_qx, grip_qy, grip_qz, grip_qw,
+            cube_x, cube_y, cube_z, cube_qx, cube_qy, cube_qz, cube_qw,
+            hand_lin_vel[0], hand_lin_vel[1], hand_lin_vel[2],
+            hand_rot_vel[0], hand_rot_vel[1], hand_rot_vel[2],
+            cube_lin_vel[0], cube_lin_vel[1], cube_lin_vel[2],
+            cube_rot_vel[0], cube_rot_vel[1], cube_rot_vel[2],
             theta1, theta_dot1,
             theta2, theta_dot2,
             theta3, theta_dot3,
@@ -92,8 +143,8 @@ class Mirobot(URDFBasedRobot):
         pass
 
     def get_finger_tip_pose(self):
-        lfinger_pose = self.pleft_finger.get_pose()
-        rfinger_pose = self.pright_finger.get_pose()
+        lfinger_pose = self.p_left_finger.get_pose()
+        rfinger_pose = self.p_right_finger.get_pose()
         center = 0.5 * (lfinger_pose[:3] + rfinger_pose[:3])
         m = quat_to_mat(lfinger_pose[3:])
         center += m[:, 2] * 0.023    # z-offset
