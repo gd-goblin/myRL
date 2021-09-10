@@ -45,7 +45,7 @@ def train_test():
             obs = env.reset()
 
 
-from task.mirobot import Mirobot, MirobotBulletEnv
+from task.envs.mirobot_env import MirobotBulletEnv
 import operator
 
 
@@ -64,6 +64,15 @@ def custom_task():
         obs = next_obs
 
 
+def pybullet_test():
+    import pybullet as p
+    import pybullet_data
+    p.connect(p.GUI)
+    p.setAdditionalSearchPath(pybullet_data.getDataPath())
+    p.loadURDF('plane.urdf')
+
+
 if __name__ == '__main__':
     # train_test()
     custom_task()
+    # pybullet_test()
