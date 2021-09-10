@@ -3,8 +3,19 @@ import pybulletgym
 import torch
 import numpy as np
 
-from utils.env_parse import make_env
+from utils.env_parse import make_env, make_custom_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize, VecFrameStack
+
+
+def env_parser(env_name, rank=None):
+    if type(env_name) is str and rank is not None:
+        return make_env(env_id=env_name, rank=rank)
+    elif type(env_name) is str and rank is None:
+        return gym.make(env_name)
+    elif type(env_name) is not str and rank is None:
+        return make_custom_env(env_name, 0)
+    else:
+        return make_custom_env(env_name, rank)
 
 
 class WrapperVecEnv(gym.Env):
@@ -16,10 +27,13 @@ class WrapperVecEnv(gym.Env):
 
         if self.num_envs == 1:
             # self.venv = gym.make(env_name)
-            self.venv = DummyVecEnv([lambda: gym.make(env_name)])
+            e = env_parser(env_name)
+            print(e)
+            print(e.observation_space)
+            self.venv = DummyVecEnv([lambda: env_parser(env_name)])
         else:
             # self.env = DummyVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)])
-            self.venv = SubprocVecEnv([make_env(env_id=env_name, rank=i) for i in range(self.num_envs)])
+            self.venv = SubprocVecEnv([env_parser(env_name, i) for i in range(self.num_envs)])
 
         if self.normalized_env:
             self.venv = VecNormalize(self.venv)

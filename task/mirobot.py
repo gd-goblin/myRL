@@ -9,15 +9,17 @@ from utils.utils import *
 class Mirobot(URDFBasedRobot):
     TARG_LIMIT = deg2rad(15)
 
-    def __init__(self):
-        URDFBasedRobot.__init__(self, model_urdf='mirobot.urdf', robot_name='mirobot_urdf', fixed_base=True, action_dim=7, obs_dim=42)
+    def __init__(self, draw_debug_lines=False):
+        URDFBasedRobot.__init__(self, model_urdf='mirobot.urdf', robot_name='mirobot_urdf', fixed_base=True, action_dim=7, obs_dim=16)
         print("Pybullet-Mirobot class description")
+
+        self.draw_debug_lines = draw_debug_lines
+        self.debug_line_id = [None, None, None]
 
     def reset(self, bullet_client):     # overriding
         self._p = bullet_client
         self.ordered_joints = []
 
-        self._p.setGravity(0, 0, -9.807)
         self._p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.parts, self.jdict, self.ordered_joints, self.robot_body = \
             self.addToScene(self._p,
@@ -84,8 +86,23 @@ class Mirobot(URDFBasedRobot):
         pos = np.array([np.random.uniform(0.1, 0.3), np.random.uniform(-0.15, 0.15), 0.1])
         self.p_cube.reset_pose(position=pos, orientation=quat)
 
-        finger_tip_pose = self.get_finger_tip_pose()
-        self.draw_coordinate(origin=finger_tip_pose[:3], quat=finger_tip_pose[3:])
+        if self.draw_debug_lines:
+            finger_tip_pose = self.get_finger_tip_pose()
+            self.draw_coordinate(origin=finger_tip_pose[:3], quat=finger_tip_pose[3:])
+
+    def episode_reset(self):
+        self.j1.reset_current_position(np.random.uniform(low=-self.TARG_LIMIT, high=self.TARG_LIMIT), 0)
+        self.j2.reset_current_position(np.random.uniform(low=-self.TARG_LIMIT, high=self.TARG_LIMIT), 0)
+        self.j3.reset_current_position(np.random.uniform(low=-self.TARG_LIMIT, high=self.TARG_LIMIT), 0)
+        self.j4.reset_current_position(np.random.uniform(low=-self.TARG_LIMIT, high=self.TARG_LIMIT), 0)
+        self.j5.reset_current_position(np.random.uniform(low=-self.TARG_LIMIT, high=self.TARG_LIMIT), 0)
+        self.j6.reset_current_position(np.random.uniform(low=-self.TARG_LIMIT, high=self.TARG_LIMIT), 0)
+        self.jlfinger.reset_current_position(0.017, 0)
+        self.jrfinger.reset_current_position(0.017, 0)
+
+        quat = euler_to_quat(roll=0.0, pitch=0.0, yaw=np.random.uniform(low=-deg2rad(90), high=deg2rad(90)))
+        pos = np.array([np.random.uniform(0.1, 0.3), np.random.uniform(-0.15, 0.15), 0.1])
+        self.p_cube.reset_pose(position=pos, orientation=quat)
 
     def apply_action(self, a):
         assert (np.isfinite(a).all())
@@ -115,27 +132,21 @@ class Mirobot(URDFBasedRobot):
         to_cube_vec = cube_pose[:3] - grip_pose[:3]
 
         # joint angles & angular vel
-        theta1, theta_dot1 = self.j1.current_relative_position()
-        theta2, theta_dot2 = self.j2.current_relative_position()
-        theta3, theta_dot3 = self.j3.current_relative_position()
-        theta4, theta_dot4 = self.j4.current_relative_position()
-        theta5, theta_dot5 = self.j5.current_relative_position()
-        theta6, theta_dot6 = self.j6.current_relative_position()
+        theta1, self.theta_dot1 = self.j1.current_relative_position()
+        theta2, self.theta_dot2 = self.j2.current_relative_position()
+        theta3, self.theta_dot3 = self.j3.current_relative_position()
+        theta4, self.theta_dot4 = self.j4.current_relative_position()
+        theta5, self.theta_dot5 = self.j5.current_relative_position()
+        theta6, self.theta_dot6 = self.j6.current_relative_position()
 
         return np.array([
             to_cube_vec[0], to_cube_vec[1], to_cube_vec[2],
-            grip_x, grip_y, grip_z, grip_qx, grip_qy, grip_qz, grip_qw,
-            cube_x, cube_y, cube_z, cube_qx, cube_qy, cube_qz, cube_qw,
-            hand_lin_vel[0], hand_lin_vel[1], hand_lin_vel[2],
-            hand_rot_vel[0], hand_rot_vel[1], hand_rot_vel[2],
-            cube_lin_vel[0], cube_lin_vel[1], cube_lin_vel[2],
-            cube_rot_vel[0], cube_rot_vel[1], cube_rot_vel[2],
-            theta1, theta_dot1,
-            theta2, theta_dot2,
-            theta3, theta_dot3,
-            theta4, theta_dot4,
-            theta5, theta_dot5,
-            theta6, theta_dot6,
+            theta1, self.theta_dot1,
+            theta2, self.theta_dot2,
+            theta3, self.theta_dot3,
+            theta4, self.theta_dot4,
+            theta5, self.theta_dot5,
+            theta6, self.theta_dot6,
             self.grip
         ])
 
@@ -154,10 +165,14 @@ class Mirobot(URDFBasedRobot):
         return np.concatenate((center, lfinger_pose[3:]), axis=0)
 
     def draw_coordinate(self, origin, quat, lenLine=0.1):
+        for id in self.debug_line_id:
+            if id is not None:
+                self._p.removeUserDebugItem(id)
+
         mat = quat_to_mat(quat)
         px = origin + lenLine * mat[:, 0]
         py = origin + lenLine * mat[:, 1]
         pz = origin + lenLine * mat[:, 2]
-        self._p.addUserDebugLine(origin, px, lineColorRGB=[1, 0, 0], lineWidth=2.0, lifeTime=0)
-        self._p.addUserDebugLine(origin, py, lineColorRGB=[0, 1, 0], lineWidth=2.0, lifeTime=0)
-        self._p.addUserDebugLine(origin, pz, lineColorRGB=[0, 0, 1], lineWidth=2.0, lifeTime=0)
+        self.debug_line_id[0] = self._p.addUserDebugLine(origin, px, lineColorRGB=[1, 0, 0], lineWidth=2.0, lifeTime=0)
+        self.debug_line_id[1] = self._p.addUserDebugLine(origin, py, lineColorRGB=[0, 1, 0], lineWidth=2.0, lifeTime=0)
+        self.debug_line_id[2] = self._p.addUserDebugLine(origin, pz, lineColorRGB=[0, 0, 1], lineWidth=2.0, lifeTime=0)

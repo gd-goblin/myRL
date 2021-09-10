@@ -46,7 +46,6 @@ def train_test():
 
 
 from task.envs.mirobot_env import MirobotBulletEnv
-import operator
 
 
 def custom_task():
@@ -55,13 +54,16 @@ def custom_task():
     env.render('human')
     obs = env.reset()
     for i in range(5000):
-        time.sleep(0.01)
-        print("obs: ", rad2deg(obs), obs.shape)
+        time.sleep(0.05)
+        # print("obs: ", rad2deg(obs), obs.shape)
         a = env.action_space.sample()
         a[-1] = 1 if a[-1] > 0 else 0
-        print("action: ", a)
+        # print("action: ", a)
         next_obs, reward, done, info = env.step(a)
         obs = next_obs
+        if i % 100 == 0:
+            print("hhhhhhhhhhhhhh")
+            env.episode_reset()
 
 
 def pybullet_test():

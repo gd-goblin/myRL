@@ -9,6 +9,7 @@ from d3rlpy.algos import CQL
 from algo.ppo import PPO, ActorCritic
 
 from task.task_desc import WrapperVecEnv
+from task.envs.mirobot_env import MirobotBulletEnv
 
 
 device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
@@ -45,9 +46,9 @@ def offline_train(env_name):
 
 
 def online_train(env_name, num_learning_iter, visualize=False, resume=False):
-    env = WrapperVecEnv(env_name=env_name, num_envs=16, device=device, normalized_env=True)
+    env = WrapperVecEnv(env_name=env_name, num_envs=4, device=device, normalized_env=True)
     env.render() if visualize else None
-    log_dir = os.path.join('run', env_name)
+    log_dir = os.path.join('run', env_name if type(env_name) is str else env_name().env_name)
 
     ppo = PPO(vec_env=env,
               learning_rate=1e-4,
@@ -70,12 +71,15 @@ def online_train(env_name, num_learning_iter, visualize=False, resume=False):
     ppo.run(num_learning_iterations=num_learning_iter, log_interval=50)
 
 
+from utils.env_parse import make_custom_env
+
 if __name__ == "__main__":
     print("My RL Project!")
     env_list = get_pybulletgym_env_list()
     env_name = env_list['PYBULLET_GYM_ENV_LIST'][4]
-    render_test(env_name, 10000)
-    # online_train(env_name=env_name, num_learning_iter=6000, visualize=False, resume=True)
+    env_name = MirobotBulletEnv
+    # render_test(env_name, 10000)
+    online_train(env_name=env_name, num_learning_iter=6000, visualize=False, resume=False)
 
     # env_name = "hopper-bullet-mixed-v0"
     # d3rlpy_dataset_check(env_name)

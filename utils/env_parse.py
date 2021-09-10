@@ -25,6 +25,24 @@ def make_env(env_id, rank, seed=0):
     return _init
 
 
+def make_custom_env(env_class, rank=0, seed=0):
+
+    def _init():
+        env = env_class()
+        env.seed(seed + rank)
+        return env
+
+    set_random_seed(seed)
+    return _init
+
+
+def _make_custom_env(env_class, seed=0):    # for single custom env
+    env = env_class()
+    set_random_seed(seed)
+    env.seed(seed)
+    return env
+
+
 def get_pybulletgym_env_list():
     folder = 'config'
     file = 'env_list.yaml'
