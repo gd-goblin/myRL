@@ -10,13 +10,14 @@ class Mirobot(URDFBasedRobot):
     TARG_LIMIT = deg2rad(15)
 
     def __init__(self):
-        URDFBasedRobot.__init__(self, model_urdf='mirobot.urdf', robot_name='mirobot_urdf', action_dim=7, obs_dim=42)
+        URDFBasedRobot.__init__(self, model_urdf='mirobot.urdf', robot_name='mirobot_urdf', fixed_base=True, action_dim=7, obs_dim=42)
         print("Pybullet-Mirobot class description")
 
     def reset(self, bullet_client):     # overriding
         self._p = bullet_client
         self.ordered_joints = []
 
+        self._p.setGravity(0, 0, -9.807)
         self._p.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.parts, self.jdict, self.ordered_joints, self.robot_body = \
             self.addToScene(self._p,

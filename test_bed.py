@@ -54,8 +54,8 @@ def custom_task():
     env = MirobotBulletEnv()
     env.render('human')
     obs = env.reset()
-    for i in range(100):
-        time.sleep(0.1)
+    for i in range(5000):
+        time.sleep(0.01)
         print("obs: ", rad2deg(obs), obs.shape)
         a = env.action_space.sample()
         a[-1] = 1 if a[-1] > 0 else 0
